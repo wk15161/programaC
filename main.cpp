@@ -11,7 +11,9 @@ void dibujandoGrafo(int,int**);
 void pausa();
 void programa();
 void grafoConDatos();
-int **llenandoMatriz(int,int);
+void grafoConTxt();
+int **llenandoMatrizManual(int);
+int **llenandoMatrizAuto(int,char[200]);
 
 void iniciarEspanol(){
 	setlocale(LC_ALL,"spanish");
@@ -48,7 +50,7 @@ int listaOpciones(){
 	int opcion = 0;
 	printf("Escriba el número de la opción deseada:\n");
 	printf("\n1. Calcular Grafo ingresando datos.");
-	printf("\n2. Calcular Grafo por archivo de texto.");
+	printf("\n2. Calcular Grafo con una matriz desde archivo de texto.");
 	printf("\n3. Salir");
 	printf("\n\nElijo la opción: ");
 	scanf("%i",&opcion);
@@ -66,6 +68,7 @@ void programa(){
 				grafoConDatos();
 				break;
 			case 2:
+				grafoConTxt();
 				break;
 			case 3:
 				seguir = false;
@@ -84,10 +87,10 @@ void grafoConDatos(){
 	int numNodos;
 	do{
 		printf("\n\n");
-		printf("¿Cuántos nodos deseas ingresar? (El mínimo es de dos nodos...)\n");
+		printf("¿Cuántos nodos deseas ingresar? (El mínimo es de dos nodos y el máximo es de 7...)\n");
 		scanf("%d",&numNodos);
 		
-		if(numNodos && numNodos > 1){
+		if(numNodos && numNodos > 1 && numNodos < 8){
 			break;
 		}
 			printf("\n\nIngresa una opción válida...\n\n");
@@ -95,8 +98,8 @@ void grafoConDatos(){
 	fflush(stdin);
 	}while(true);
 	
-	//ejecutamos la funcion llenando la matriz manualmente => por eso le enviamos la opcion 1, indicando llenado manual
-	int **matr = llenandoMatriz(1,numNodos);
+	//ejecutamos la funcion llenando la matriz manualmente
+	int **matr = llenandoMatrizManual(numNodos);
 	
 	system("cls");
 	printf("\n\nEl grafo será dibujado considerando %i nodos.\n",numNodos);
@@ -109,37 +112,126 @@ void grafoConDatos(){
 	
 }
 
-int **llenandoMatriz(int opcionLlenado, int numNodosPedidos){
+void grafoConTxt(){
+	int tamano = 1;
+	char archivoNombre[200];
+	FILE* archivo;
+	do{
+		fflush(stdin);
+		printf("\n\n");
+		printf("Por favor coloca tu archivo txt dentro de la carpeta donde estás ejecutando este programa..\n");
+		printf("Y terminado ello, escribe tal y cuál el nombre de tu archivo txt");
+		printf("\n\nEjemplo: archivito.txt");
+		printf("\nCabe destacar que solamente se pueden generar de 2 a 7 nodos...");
+		printf("\n\nNombre del archivo: ");
+		fgets(archivoNombre, 200, stdin);
 	
-	switch(opcionLlenado){
-		case 1:
+		//SI HAY SALTOS DE LÍNEA EN EL stdin
+		if ((strlen(archivoNombre) > 0) && (archivoNombre[strlen(archivoNombre) - 1] == '\n')){
+        	archivoNombre[strlen(archivoNombre) - 1] = '\0';
+    	}
+		fflush(stdin);
+		
+		system("cls");
+	
+		// declaramos una variable de tipo archivo
+		archivo = fopen(archivoNombre, "r");
+    	if (archivo == NULL) {
+        	printf("\n\nNo existe el archivo. Inténtalo de nuevo\n\n");
+        	pausa();
+			fflush(stdin);
+    	}else if(archivo != NULL){
+    		
+    		 // Contamos el número de filas que existen dentro del archivo
+    		tamano = 1;
+    		while (!feof(archivo)) {
+        		char c = fgetc(archivo);
+        		if (c == '\n') {
+            		tamano++;
+        		}
+    		}
+    
+    		fclose(archivo);
+			fflush(stdin);
 			
-			
-			int **matriz;
-			matriz = (int **)malloc (numNodosPedidos*sizeof(int *));
+			if(tamano<2 || tamano>7){
+				printf("\n\nEl archivo contiene %i nodos y no se puede generar, recuerda que solamente se permite un rango de 2 a 7 nodos..\n\n",tamano);
+				pausa();
+				fflush(stdin);
+			}else{
+				break;
+			}
+		}
+	
+	}while(true);
+	
+	
+	//ejecutamos la funcion llenando la matriz automáticamente
+	int **matr = llenandoMatrizAuto(tamano,archivoNombre);
+	
+	system("cls");
+	printf("\n\nEl grafo será dibujado considerando %i nodos.\n",tamano);
+	printf("cuando se abra la ventana con el dibujo, si desea cerrarlo de click sobre aquella ventana\n y presione enter...\n\n");
+	pausa();
+	
+	
+	//comenzando el dibujo del grafo
+	dibujandoGrafo(tamano,matr);
+	
+}
 
-			for (int i=0;i<numNodosPedidos;i++){
-				matriz[i] = (int *) malloc (numNodosPedidos*sizeof(int));
-			}
-			
-			for (int i=0;i<numNodosPedidos;i++){
-				
-				for(int j=0;j<numNodosPedidos;j++){
-					printf("\n\ndame el peso a guardar en la posición [%i][%i]: ",i,j);
-					scanf("%i",&matriz[i][j]);
-					fflush(stdin);
-				}
-				
-			}
-			
-			return matriz;
-			
-			break;
-		case 2:
-			break;
+int **llenandoMatrizAuto(int tamano,char archivoNombre[200]){
+
+	//Declaramos la matriz sin parámetros
+	int** matriz;		
+	matriz = (int **)malloc (tamano*sizeof(int *));
+
+	for (int i=0;i<tamano;i++){
+		matriz[i] = (int *) malloc (tamano*sizeof(int));
 	}
 	
+	//leemos el archivo
+	FILE* archivo = fopen(archivoNombre, "r");
+    if (archivo == NULL) {
+        printf("No se pudo abrir el archivo\n");
+        pausa();
+        exit(1);
+    }
 	
+    // Leemos los valores
+	for (int i = 0; i < tamano; i++) {
+    	for (int j = 0; j < tamano; j++) {
+        	if (fscanf(archivo, "%d", &matriz[i][j]) != 1) {
+            	printf("Error al leer el archivo en [%d][%d]\n, reinicie el programa,\n y seleccione un archivo con una matriz válida...", i, j);
+            	pausa();
+            	exit(1);
+        	}
+    	}
+	}
+			
+	return matriz;
+}
+
+int **llenandoMatrizManual(int numNodosPedidos){
+	
+	//Declaramos la matriz sin parámetros
+	int** matriz;		
+	matriz = (int **)malloc (numNodosPedidos*sizeof(int *));
+
+	for (int i=0;i<numNodosPedidos;i++){
+		matriz[i] = (int *) malloc (numNodosPedidos*sizeof(int));
+	}
+			
+	for (int i=0;i<numNodosPedidos;i++){			
+		for(int j=0;j<numNodosPedidos;j++){
+			printf("\n\ndame el peso a guardar en la posición [%i][%i]: ",i,j);
+			scanf("%i",&matriz[i][j]);
+			fflush(stdin);
+		}
+				
+	}
+			
+	return matriz;
 }
 
 void dibujandoGrafo(int numeroNodos, int **matrix){
@@ -147,20 +239,9 @@ void dibujandoGrafo(int numeroNodos, int **matrix){
 	
     int tamanoNodo = 40; // Tamaño que tendrá cada nodo
     
-    
-//    int matrix[][numeroNodos] = {{0, 1, 1, 0, 0, 1},
-//                       		  	 {1, 0, 1, 1, 0, 0},
-//                              	 {1, 1, 0, 0, 1, 1},
-//                              	 {0, 1, 0, 0, 1, 1},
-//                              	 {0, 0, 1, 1, 0, 0},
-//							  	 {0, 0, 1, 1, 0, 0}}; // Ejemplo de matriz de adyacencia
-
-    // Coordenadas de los nodos
-	// int nodeX[] = {100, 500, 900, 500, 100};
-	// int nodeY[] = {100, 500, 500, 900, 900};
-    
-    int nodoX[] = {100, 100, 500, 700, 900, 700};
-    int nodoY[] = {100, 300, 100, 500, 500, 700};
+    //Posiciones predeterminadas de cada nodo
+    int nodoX[] = {100, 100, 500, 450, 900, 550, 300};
+    int nodoY[] = {100, 450, 100, 500, 300, 800, 900};
 
     // Configura el tamaño y el color del texto
     settextstyle(0, 0, 3); // Fuente 0, sin estilo especial, tamaño 3
@@ -194,8 +275,11 @@ void dibujandoGrafo(int numeroNodos, int **matrix){
 
 				//dibujamos los pesos en el medio de cada línea
 				char es[200];
-				sprintf(es, "%d", matrix[i][j]);   
-        		outtextxy(((endX - startX)/2)+startX-20, ((endY - startY)/2)+startY-20, es); 
+				sprintf(es, "%d", matrix[i][j]);
+				if(matrix[i][j]!=0 && matrix[i][j]!=1){
+					outtextxy(((endX - startX)/2)+startX-20, ((endY - startY)/2)+startY-20, es); 
+				}   
+        		
     			
 				 // Calcula las coordenadas de la punta de la flecha
     			int arrowX = nodoX[j] - (int)(tamanoNodo * cos(angle));
