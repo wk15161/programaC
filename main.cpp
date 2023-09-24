@@ -245,7 +245,7 @@ void dibujandoGrafo(int numeroNodos, int **matrix){
 
     // Configura el tamaño y el color del texto
     settextstyle(0, 0, 3); // Fuente 0, sin estilo especial, tamaño 3
-	// setcolor(RED); // Color del texto en rojo
+	setcolor(14); // Color del texto en amarillo
 	
     // Dibuja los nodos como círculos y coloca etiquetas
     for (int i = 0; i < numeroNodos; i++) {
@@ -256,7 +256,8 @@ void dibujandoGrafo(int numeroNodos, int **matrix){
         letra[1] = '\0'; // Termina la cadena
         outtextxy(nodoX[i] - 5, nodoY[i] - 5, letra); // Coloca la etiqueta cerca del nodo
     }
-
+    
+	setcolor(15); // Color blanco de las aristas
     // Dibujar las aristas
     for (int i = 0; i < numeroNodos; i++) {
         for (int j = 0; j < numeroNodos; j++) {
@@ -271,39 +272,96 @@ void dibujandoGrafo(int numeroNodos, int **matrix){
                 int endX = nodoX[j] - (int)(tamanoNodo * cos(angle));
                 int endY = nodoY[j] - (int)(tamanoNodo * sin(angle));
 
-                line(startX, startY, endX, endY); // Dibuja una línea entre nodos conectados
 
-				//dibujamos los pesos en el medio de cada línea
-				char es[200];
-				sprintf(es, "%d", matrix[i][j]);
-				if(matrix[i][j]!=0 && matrix[i][j]!=1){
-					outtextxy(((endX - startX)/2)+startX-20, ((endY - startY)/2)+startY-20, es); 
-				}   
-        		
-    			
-				 // Calcula las coordenadas de la punta de la flecha
-    			int arrowX = nodoX[j] - (int)(tamanoNodo * cos(angle));
-    			int arrowY = nodoY[j] - (int)(tamanoNodo * sin(angle));
+				if(i==j){
+          			arc(endX,endY,tamanoNodo+12,305,tamanoNodo+8); //dibujamos un arco, indicando que el nodo se apunta así mismo
+          			//dibujamos los pesos en el medio de cada línea
+          			
+          			//dibujamos los pesos para el caso de dibujar un arco a un nodo que se apunta así mismos
+					char es[200];
+					sprintf(es, "%d", matrix[i][j]);
+					if(matrix[i][j]!=1){
+						if(matrix[i][j]<10){
+							outtextxy(((endX - startX)/2)+startX-53, ((endY - startY)/2)+startY-75, es);
+						}else{
+							outtextxy(((endX - startX)/2)+startX-63, ((endY - startY)/2)+startY-75, es);
+						}		 
+					}
+					
+				}else{
+					line(startX, startY, endX, endY); // Dibuja una línea entre nodos conectados
+				          
+        			if(matrix[i][j]==0 || matrix[j][i]==0){
+    					// Calcula las coordenadas de la punta de la flecha
+    					int arrowX = nodoX[j] - (int)(tamanoNodo * cos(angle));
+    					int arrowY = nodoY[j] - (int)(tamanoNodo * sin(angle));
 
-    			// Calcula las coordenadas de los extremos de las alas de la flecha
-    			int wing1X = arrowX - (int)((tamanoNodo/2) * cos(angle + M_PI / 6)); // Ángulo de 30 grados
-    			int wing1Y = arrowY - (int)((tamanoNodo/2) * sin(angle + M_PI / 6));
-    			int wing2X = arrowX - (int)((tamanoNodo/2) * cos(angle - M_PI / 6)); // Ángulo de -30 grados
-    			int wing2Y = arrowY - (int)((tamanoNodo/2) * sin(angle - M_PI / 6));
+    					// Calcula las coordenadas de los extremos de las alas de la flecha
+    					int wing1X = arrowX - (int)((tamanoNodo/2) * cos(angle + M_PI / 6)); // Ángulo de 30 grados
+    					int wing1Y = arrowY - (int)((tamanoNodo/2) * sin(angle + M_PI / 6));
+    					int wing2X = arrowX - (int)((tamanoNodo/2) * cos(angle - M_PI / 6)); // Ángulo de -30 grados
+    					int wing2Y = arrowY - (int)((tamanoNodo/2) * sin(angle - M_PI / 6));
 
-   			 	// Dibuja las alas de la flecha
-    			line(wing1X, wing1Y, arrowX, arrowY);
-    			line(wing2X, wing2Y, arrowX, arrowY);
+   			 			// Dibuja las alas de la flecha
+    					line(wing1X, wing1Y, arrowX, arrowY);
+    					line(wing2X, wing2Y, arrowX, arrowY);
     			
 			
-    			//Restableciendo los valores a cero
-    			arrowX = 0;
-    			arrowY = 0;
-    			wing1X = 0;
-    			wing2X = 0;
-    			wing1Y = 0;
-    			wing2Y = 0;
-    	
+    					//Restableciendo los valores a cero
+    					arrowX = 0;
+    					arrowY = 0;
+    					wing1X = 0;
+    					wing2X = 0;
+    					wing1Y = 0;
+    					wing2Y = 0;
+    					
+    					//dibujamos los pesos en el medio de cada línea
+						char es[200];
+						sprintf(es, "%d", matrix[i][j]);
+						if(matrix[i][j]!=1){
+							if(matrix[i][j]<10){
+								outtextxy(((endX - startX)/2)+startX-10, ((endY - startY)/2)+startY-10, es);
+							}else{
+								outtextxy(((endX - startX)/2)+startX-21, ((endY - startY)/2)+startY-21, es);
+							}		 
+						}
+					}else{
+						if(matrix[i][j] == matrix[j][i]){
+							//dibujamos los pesos en el medio de cada línea
+							char es[200];
+							sprintf(es, "%d", matrix[i][j]);
+							
+							
+							if(matrix[i][j]!=1){
+								if(matrix[i][j]<10){
+									outtextxy(((endX - startX)/2)+startX-10, ((endY - startY)/2)+startY-10, es);
+								}else{
+									outtextxy(((endX - startX)/2)+startX-21, ((endY - startY)/2)+startY-21, es);
+								}		 
+							}
+							
+							matrix[i][j]=0;
+							matrix[j][i]=0;
+						}else{
+							//dibujamos los pesos en el medio de cada línea
+							char es[200];
+							sprintf(es, "%d", matrix[i][j]);
+							
+							
+							if(matrix[i][j]!=1){
+								if(matrix[i][j]<10){
+									outtextxy(((endX - startX)/2)+startX-10, ((endY - startY)/2)+startY-10, es);
+								}else{
+									outtextxy(((endX - startX)/2)+startX-21, ((endY - startY)/2)+startY-21, es);
+								}		 
+							}
+							
+							matrix[i][j]=0;
+							matrix[j][i]=0;
+						}
+						
+					}
+    			}
 			}
         }
     }
